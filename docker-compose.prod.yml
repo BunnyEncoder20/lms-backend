@@ -1,0 +1,24 @@
+
+# Prod Override Compose: runtime Target, disables mounts
+# docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+# version: "3.9"
+
+services:
+  lms-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: lms-backend-prod
+    command: npm run start:prod
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - lms-net
