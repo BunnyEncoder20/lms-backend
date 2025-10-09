@@ -10,13 +10,40 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// enums
+enum Rank {
+  VICE_ADMIRAL
+  REAR_ADMIRAL
+  COMODOR
+  CAPTAIN
+  COMMANDER
+  LT_COMMANDER
+  LT
+  SUB_LT
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  TETRA_ADMIN
+  CO
+  JR_CO
+  LMS_ADMIN
+  OPERATOR
+  TRAINER
+  MAINTAINER
+  TRAINEE
+  ASSESSEE
+}
+
+// Table Schemas
 // User Table
 model User {
   id Int @id @default(autoincrement())
-  rank String
+  rank Rank
   name String
   email String @unique
-  role String
+  role Role
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()
 }
