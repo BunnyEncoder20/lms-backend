@@ -14,50 +14,47 @@ export class PrismaService
 
   constructor() {
     super({
-      log: [
-        {
-          emit: 'event',
-          level: 'query',
-        },
-        {
-          emit: 'event',
-          level: 'info',
-        },
-        {
-          emit: 'event',
-          level: 'warn',
-        },
-        {
-          emit: 'event',
-          level: 'error',
-        },
-      ],
+      log:
+        process.env.NODE_ENV === 'production' // disables query logging in production
+          ? ['error', 'warn']
+          : [
+              { emit: 'event', level: 'query' },
+              { emit: 'event', level: 'info' },
+              { emit: 'event', level: 'warn' },
+              { emit: 'event', level: 'error' },
+            ],
     });
   }
 
   async onModuleInit() {
-    this.$on('query', (event) => {
-      this.logger.debug(`Query: ${event.query} Params: ${event.params} Duration: ${event.duration}ms`);
+    // Quaery events have: query, params, durations, target
+    this.$on('query' as never, (event: any) => {
+      this.logger.debug(
+        `Query: ${event.query} | Params: ${event.params} | Duration: ${event.duration}ms`
+      );
     });
 
-    this.$on('info', (event) => {
+    // Info/warn/error events have: timestamp, message, target
+    this.$on('info' as never, (event: any) => {
       this.logger.log(event.message);
     });
 
-    this.$on('warn', (event) => {
+    this.$on('warn' as never, (event: any) => {
       this.logger.warn(event.message);
     });
 
-    this.$on('error', (event) => {
+    this.$on('error' as never, (event: any) => {
       this.logger.error(event.message);
     });
 
+
+    // Connecting Prisma to PostgreSQL
     await this.$connect();
     this.logger.log('Connected to Prisma Database');
   }
 
   async onModuleDestroy() {
     await this.$disconnect();
-    console.log('[Prisma] Disconnected from PostgreSQL');
+    console.log('Disconnected from PostgreSQL');
   }
 }
