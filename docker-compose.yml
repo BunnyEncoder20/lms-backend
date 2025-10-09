@@ -1,24 +1,40 @@
-# version: '3.8'
+# Base "Infra Only" compose file (needed by both dev and prod)
+# version: '3.9'
 services:
-  lms-backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: development
-    ports:
-      - '3000:3000'
-    depends_on:
-      - postgres
-    env_file:
-      - .env
-    volumes:
-      - .:/usr/src/app  # Mount current folder into container
-      - /usr/src/app/node_modules # Prevent the node_modules from being overwritten
-    command: npm run start:dev  # run dev mode with hot reload
-
   postgres:
-    image: postgres:13
-    ports:
-      - '5432:5432'
+    image: postgres:13-alpine
+    container_name: lms-postgres
+    restart: unless-stopped
     env_file:
       - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-lms}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - lms-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      retries: 5
+  redis:
+    image: redis:7-alpine
+    container_name: lms-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - lms-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  lms-net:
