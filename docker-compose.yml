@@ -35,6 +35,7 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  lms_node_modules:
 
 networks:
   lms-net:

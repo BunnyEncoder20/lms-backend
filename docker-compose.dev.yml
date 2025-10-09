@@ -8,14 +8,15 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: lms-backend-dev
-    command: npm run start:dev
+    command: sh -c "npx prisma generate && npm run start:dev"
     ports:
       - "3000:3000"
     env_file:
       - .env
     volumes:
       - .:/usr/src/app
-      - /usr/src/app/node_modules
+      - lms_node_modules:/usr/src/app/node_modules
+      - /usr/src/app/node_modules/.prisma  # to not override the .prisma folder in node_modules
     depends_on:
       postgres:
         condition: service_healthy
@@ -23,3 +24,6 @@ services:
         condition: service_healthy
     networks:
       - lms-net
+
+volumes:
+  lms_node_modules:
