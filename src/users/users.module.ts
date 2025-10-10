@@ -7,5 +7,6 @@ import { UsersController } from './users.controller';
   // imports: [PrismaModule],  // cause prismaService is declare with @Global deco, it can be directly injected in all modules
   providers: [UsersService],
   controllers: [UsersController],
+  exports: [UsersService],
 })
 export class UsersModule {}
