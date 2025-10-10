@@ -1,19 +1,50 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { UsersService } from 'src/users/users.service';
-
-type AuthInput = { username: string; password: string };
-type SignInData = { userId: number; username: string };
+import { JwtService } from '@nestjs/jwt';
+import { UsersService } from '../users/users.service';
+import * as bcrypt from 'bcrypt';
+import { User, Rank, Role } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
-  constructor(private userService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private jwtService: JwtService,
+  ) {}
 
-  async validateUser(input: AuthInput): Promise<SignInData | null> {
-    const user = await this.userService.getByEmail(input.username);
-    if (!user) {
-      throw new UnauthorizedException();
-      return null;
+  async signUp(
+    email: string,
+    password: string,
+    name: string,
+    rank: Rank,
+    role: Role,
+  ) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await this.usersService.createUser({
+      name,
+      email,
+      rank,
+      role,
+      password: hashedPassword,
+    });
+
+    return this.generateToken(user);
+  }
+
+  async signIn(email: string, password: string) {
+    const user: User | null = await this.usersService.getByEmail(email);
+
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      throw new UnauthorizedException('Invalid credentials');
     }
-    return { userId: user.id, username: user.email };
+
+    return this.generateToken(user);
+  }
+
+  private generateToken(user: User) {
+    const payload = { sub: user.id, email: user.email, role: user.role };
+
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
   }
 }
