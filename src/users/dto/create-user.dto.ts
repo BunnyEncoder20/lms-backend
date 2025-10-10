@@ -9,6 +9,10 @@ export class CreateUserDto {
   @IsEmail()
   email: string;
 
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+
   @IsEnum(Rank, { message: 'rank must be one of the defined Rank enum values' })
   rank: Rank;
 
