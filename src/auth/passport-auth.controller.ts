@@ -1,5 +1,7 @@
-import { Controller, Post, HttpCode, NotImplementedException, HttpStatus } from '@nestjs/common';
+import { Controller, Post, HttpCode, HttpStatus, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { PassportSignUpDto } from './dto/passport-signup.dto';
+import { PassportSignInDto } from './dto/passport-signin.dto';
 
 @Controller('auth-v2')
 export class PassportAuthController {
@@ -7,12 +9,14 @@ export class PassportAuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('signup')
-  signUp() {
-    throw new NotImplementedException();
+  signUp(@Body() signUpDto: PassportSignUpDto) {
+    const { email, password, name, rank, role } = signUpDto;
+    return this.authService.signUp(email, password, name, rank, role);
   }
 
   @Post('signin')
-  signIn() {
-    throw new NotImplementedException();
+  signIn(@Body() signInDto: PassportSignInDto) {
+    const { email, password } = signInDto;
+    return this.authService.signIn(email, password);
   }
 }
