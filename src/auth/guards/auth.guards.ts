@@ -13,9 +13,9 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const authorization = request.headers.authorization; // Bearer <token>
-    console.log('Authorization:', authorization);
+    // console.log('Authorization:', authorization);
     const token: string = authorization?.split(' ')[1];
-    console.log('token to be verified:', token);
+    // console.log('token to be verified:', token);
 
     if (!token) {
       throw new UnauthorizedException('No auth header provided');
