@@ -27,7 +27,11 @@ export class AuthService {
       password: hashedPassword,
     });
 
-    return this.generateToken(user);
+    return {
+      id: user.id,
+      email: user.email,
+      access_token: this.generateToken(user).access_token,
+    };
   }
 
   async signIn(email: string, password: string) {
@@ -37,7 +41,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    return this.generateToken(user);
+    return {
+      id: user.id,
+      email: user.email, // TODO: might need to send role back instead of email
+      access_token: this.generateToken(user).access_token,
+    };
   }
 
   private generateToken(user: User) {
