@@ -15,7 +15,7 @@ import { PassportAuthController } from './passport-auth.controller';
     ConfigModule,
     JwtModule.register({
       global: true,
-      secret: process.env.JWT_SECRET || 'super-secret-key',
+      secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '1d' }, // tokens expire in 1 day
     }),
   ],

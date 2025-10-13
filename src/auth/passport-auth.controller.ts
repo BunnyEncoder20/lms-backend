@@ -14,6 +14,7 @@ export class PassportAuthController {
     return this.authService.signUp(email, password, name, rank, role);
   }
 
+  @HttpCode(HttpStatus.OK)
   @Post('signin')
   signIn(@Body() signInDto: PassportSignInDto) {
     const { email, password } = signInDto;
