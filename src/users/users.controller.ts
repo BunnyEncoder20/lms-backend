@@ -1,16 +1,21 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Request, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { AuthGuard } from 'src/auth/guards/auth.guards';
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
   /* GET Routes */
+  @UseGuards(AuthGuard)
   @Get()
-  getAll() {
-    return this.usersService.getAll();
+  async getAll(@Request() request) {
+    return {
+      requested_by: request.user, // coming from the AuthGuard
+      users: await this.usersService.getAll(), // cause userService.getAll() returns a promise obj, we must await it.
+    }
   }
 
   @Get(':id')
