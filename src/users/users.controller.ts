@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Request,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -14,13 +15,15 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 // import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { JwtAuthGuard } from 'src/auth/guards/passport.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
   /* GET Routes */
-  @UseGuards(JwtAuthGuard)
+  @Roles('ADMIN') // RBAC: only ADMIN can access this route
+  @UseGuards(JwtAuthGuard) // Protected Route: Need valid JWT token
   @Get()
   async getAll(@Request() request) {
     // return {
@@ -33,9 +36,16 @@ export class UsersController {
     };
   }
 
+  @UseGuards(JwtAuthGuard) // Protected Route: Need valid JWT token
   @Get(':id')
-  getOne(@Param('id') userId: number) {
-    return this.usersService.getById(userId);
+  getOne(@Request() req,  @Param('id') userId: number) {
+    const userData = this.usersService.getById(userId);
+    if (userData.id === req.user.id) {
+      return userData;
+    }
+    else {
+      throw new UnauthorizedException('User can only access their own data');
+    }
   }
 
   /* POST Routes */
