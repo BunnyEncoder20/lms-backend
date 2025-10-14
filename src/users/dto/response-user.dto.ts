@@ -4,6 +4,7 @@ export class ResponseUserDto {
   id: number;
   email: string;
   role: string;
+  rank: string;
 
   @Exclude() password: string;
   @Exclude() createdAt: Date;
