@@ -52,6 +52,10 @@ export class UsersController {
   async getOne(@Request() req, @Param('id') userId: string) {
     const userData = await this.usersService.getById(parseInt(userId, 10));
 
+    // Debugging data
+    // console.log(`token data id:${typeof req.user.userId}:${req.user.userId}`);
+    // console.log(`db data id:${typeof userData.id}:${userData.id}`);
+
     // User can only access their own data (unless they are an admin)
     if (
       userData &&
@@ -65,18 +69,24 @@ export class UsersController {
 
 
   /* POST Routes */
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'SUPER_ADMIN', 'TETRA_ADMIN', 'CO', 'JR_CO', 'LMS_ADMIN')
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.createUser(createUserDto);
   }
 
   /* PATCH Routes */
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'SUPER_ADMIN', 'TETRA_ADMIN', 'CO', 'JR_CO', 'LMS_ADMIN')
   @Patch(':id')
   update(@Param('id') userId: number, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.updateUser(userId, updateUserDto);
   }
 
   /* DELETE Routes */
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'SUPER_ADMIN', 'TETRA_ADMIN', 'CO', 'JR_CO', 'LMS_ADMIN')
   @Delete(':id')
   delete(@Param('id') userId: number) {
     return this.usersService.delete(userId);
