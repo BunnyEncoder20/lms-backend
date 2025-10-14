@@ -16,6 +16,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 // import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { JwtAuthGuard } from 'src/auth/guards/passport.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 
 @Controller('users')
 export class UsersController {
@@ -23,7 +24,7 @@ export class UsersController {
 
   /* GET Routes */
   @Roles('ADMIN') // RBAC: only ADMIN can access this route
-  @UseGuards(JwtAuthGuard) // Protected Route: Need valid JWT token
+  @UseGuards(JwtAuthGuard, RolesGuard) // Protected Route: Need valid JWT token
   @Get()
   async getAll(@Request() request) {
     // return {
@@ -38,12 +39,16 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard) // Protected Route: Need valid JWT token
   @Get(':id')
-  getOne(@Request() req,  @Param('id') userId: number) {
-    const userData = this.usersService.getById(userId);
-    if (userData.id === req.user.id) {
+  async getOne(@Request() req, @Param('id') userId: string) {
+    const userData = await this.usersService.getById(parseInt(userId, 10));
+
+    // User can only access their own data (unless they are an admin)
+    if (
+      userData &&
+      (userData.id === req.user.id || req.user.role === 'ADMIN')
+    ) {
       return userData;
-    }
-    else {
+    } else {
       throw new UnauthorizedException('User can only access their own data');
     }
   }
