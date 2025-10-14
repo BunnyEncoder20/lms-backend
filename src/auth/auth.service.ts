@@ -3,12 +3,14 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User, Rank, Role } from '@prisma/client';
 import { UsersService } from '../users/users.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   async signUp(
@@ -27,10 +29,15 @@ export class AuthService {
       password: hashedPassword,
     });
 
+    const tokens = this.generateTokens(user);
+
+    // Optionally: store refresh token in DB for revocation and rotation
+    await this.updateRefreshToken(user.id, tokens.access_token);
+
     return {
       id: user.id,
       email: user.email,
-      access_token: this.generateToken(user).access_token,
+      ...tokens,
     };
   }
 
@@ -41,18 +48,56 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    const tokens = this.generateTokens(user);
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
+
     return {
       id: user.id,
       email: user.email, // TODO: might need to send role back instead of email
-      access_token: this.generateToken(user).access_token,
+      ...tokens,
     };
   }
 
-  private generateToken(user: User) {
+  private generateTokens(user: User) {
     const payload = { sub: user.id, email: user.email, role: user.role };
 
     return {
       access_token: this.jwtService.sign(payload),
+      refresh_token: this.jwtService.sign(payload),
     };
+  }
+
+  async refreshTokens(userId: number, refreshToken: string) {
+    const user = await this.usersService.getById(userId);
+
+    if (!user || !user.refreshToken) {
+      throw new UnauthorizedException('Access Denied: refresh token not found');
+    }
+
+    const refreshTokenMatches = await bcrypt.compare(
+      refreshToken,
+      user.refreshToken,
+    );
+
+    if (!refreshTokenMatches) {
+      throw new UnauthorizedException('Access Denied: Invalid refreshToken');
+    }
+
+    const tokens = this.generateTokens(user);
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
+
+    return tokens;
+  }
+
+  private async updateRefreshToken(userId: string, refreshToken: string) {
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+    await this.usersService.updateUser(userId, {
+      refreshToken: hashedRefreshToken,
+    });
+  }
+
+  async signOut(userId: string) {
+    // Clear refresh token from database
+    await this.usersService.updateUser(userId, { refreshToken: null });
   }
 }
