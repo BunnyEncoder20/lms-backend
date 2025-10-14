@@ -23,8 +23,8 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   /* GET Routes */
-  @Roles('ADMIN') // RBAC: only ADMIN can access this route
   @UseGuards(JwtAuthGuard, RolesGuard) // Protected Route: Need valid JWT token
+  @Roles('ADMIN') // RBAC: only ADMIN can access this route
   @Get()
   async getAll(@Request() request) {
     // return {
@@ -37,6 +37,16 @@ export class UsersController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('whoami')
+  whoami(@Request() req) {
+    return {
+      id: req.user.userId,
+      email: req.user.email,
+      role: req.user.role,
+    };
+  }
+
   @UseGuards(JwtAuthGuard) // Protected Route: Need valid JWT token
   @Get(':id')
   async getOne(@Request() req, @Param('id') userId: string) {
@@ -45,13 +55,14 @@ export class UsersController {
     // User can only access their own data (unless they are an admin)
     if (
       userData &&
-      (userData.id === req.user.id || req.user.role === 'ADMIN')
+      (userData.id === req.user.userId || req.user.role === 'ADMIN')
     ) {
       return userData;
     } else {
       throw new UnauthorizedException('User can only access their own data');
     }
   }
+
 
   /* POST Routes */
   @Post()
