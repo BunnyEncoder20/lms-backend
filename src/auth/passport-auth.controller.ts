@@ -3,11 +3,12 @@ import { AuthService } from './auth.service';
 import { PassportSignUpDto } from './dto/passport-signup.dto';
 import { PassportSignInDto } from './dto/passport-signin.dto';
 import { JwtAuthGuard } from './guards/passport.guard';
-import {Request, Response} from 'express';
+import { Request, Response } from 'express';
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('auth-v2')
 export class PassportAuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private jwtService: JwtService) {}
 
   @HttpCode(HttpStatus.OK)
   @Post('signup')
@@ -20,8 +21,8 @@ export class PassportAuthController {
 
     // Return user info without the tokens (They'll be in cookies now)
     return {
-      id: result.id,
-      email: result.email,
+      id: results.id,
+      email: results.email,
       message: 'User registration successful',
     }
   }
@@ -88,13 +89,13 @@ export class PassportAuthController {
     response.cookie('access_token', access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production', // Uss secure cookies in production
-      sameSite: 'struct', // CSRF protection
+      sameSite: 'strict', // CSRF protection
       maxAge: 15 * 60 * 1000, // 15 minutes
       path: '/',
     });
 
     // Refresh token cookie
-    response.cookie('refresh_token', refresh_token, {
+    response.cookie('refresh_token', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
