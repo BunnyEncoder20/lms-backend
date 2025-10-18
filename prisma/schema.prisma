@@ -13,14 +13,14 @@ datasource db {
 // Table Schemas
 // User Table
 model User {
-  id Int @id @default(autoincrement())
   rank Rank
   name String
-  email String @unique
+  id String @id   // Personal Number  
+  password String
   role Role
   createdAt DateTime @default(now())
-  password String
   updatedAt DateTime @updatedAt()
+  refreshToken String?  // for token management
 }
 
 
