@@ -13,14 +13,23 @@ datasource db {
 // Table Schemas
 // User Table
 model User {
-  rank Rank
-  name String
-  id String @id   // Personal Number  
-  password String
-  role Role
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
-  refreshToken String?  // for token management
+  personalNumber        String    @id @unique
+  firstName             String
+  lastName              String
+  email                 String?   @unique
+  rank                  Rank
+  role                  Role
+  passwordHash          String
+  refreshTokenHash      String?
+  lastLoginAt           DateTime?
+  failedLoginAttempts   Int       @default(0)
+  lastPasswordChangeAt  DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  createdBy             String?
+  updatedBy             String?
+  isActive              Boolean   @default(true)
+  deletedAt             DateTime?
 }
 
 
