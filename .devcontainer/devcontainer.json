@@ -1,0 +1,36 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/docker-existing-docker-compose
+{
+	"name": "LMS Backend Dev Container",
+	"dockerComposeFile": [
+		"../docker-compose.yml", // Base infrastructure (Postgres, Redis)
+		"../docker-compose.dev.yml" // Development specific overrides (NestJS app with hot reload)
+	],
+	// The 'service' property is the name of the service for the container that VS Code should
+	// use. This should be the NestJS backend service defined in docker-compose.dev.yml.
+	"service": "lms-backend",
+	// The optional 'workspaceFolder' property is the path VS Code should open by default when
+	// connected. This is typically a file mount in .devcontainer/docker-compose.yml
+	"workspaceFolder": "/usr/src/app", // Matches the WORKDIR in Dockerfile
+	"features": {
+		"ghcr.io/devcontainers/features/node:1": {}
+	},
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// The NestJS app runs on port 3000.
+	"forwardPorts": [3000],
+	// Run commands after the container is created.
+	// This ensures node_modules and Prisma client are generated within the mounted volume.
+	"postCreateCommand": "npm install && npx prisma generate",
+	// Configure tool-specific properties.
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"esbenp.prettier-vscode",
+				"dbaeumer.vscode-eslint",
+				"prisma.prisma"
+			]
+		}
+	}
+	// Uncomment to connect as an existing user other than the container default. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "node" // Or "root" if you prefer
+}
