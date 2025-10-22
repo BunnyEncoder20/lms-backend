@@ -1,6 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/docker-existing-docker-compose
 {
+	// This DEV CONTAINER does not work (cannot find the files properly)
 	"name": "LMS Backend Dev Container",
 	"dockerComposeFile": [
 		"../docker-compose.yml", // Base infrastructure (Postgres, Redis)
