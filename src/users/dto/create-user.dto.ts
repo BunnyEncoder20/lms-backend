@@ -1,10 +1,20 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsString, MinLength, MaxLength } from 'class-validator';
 import { Rank, Role } from '@prisma/client';
 
 export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
-  name: string;
+  @MinLength(6, { message: 'Personal Number is 6 characters long' })
+  @MaxLength(6, { message: 'Personal Number is 6 characters long' })
+  personalNumber: string;
+
+  @IsString()
+  @IsNotEmpty()
+  firstName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  lastName: string;
 
   @IsEmail()
   @IsNotEmpty()

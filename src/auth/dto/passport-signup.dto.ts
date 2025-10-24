@@ -1,10 +1,20 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
 import { Rank, Role } from '@prisma/client';
 
 export class PassportSignUpDto {
   @IsNotEmpty()
   @IsString()
-  name: string;
+  @MinLength(6, { message: 'Personal Number is 6 characters long' })
+  @MaxLength(6, { message: 'Personal Number is 6 characters long' })
+  personalNumber: string;
+  
+  @IsNotEmpty()
+  @IsString()
+  firstName: string;
+
+  @IsNotEmpty()
+  @IsString()
+  lastName: string;
 
   @IsNotEmpty()
   @IsEmail()
