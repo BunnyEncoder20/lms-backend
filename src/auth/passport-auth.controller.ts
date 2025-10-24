@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { PassportSignUpDto } from './dto/passport-signup.dto';
 import { PassportSignInDto } from './dto/passport-signin.dto';
 import { JwtAuthGuard } from './guards/passport.guard';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
 
 @Controller('auth-v2')
@@ -88,7 +88,7 @@ export class PassportAuthController {
     // Access token cookie
     response.cookie('access_token', access_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Uss secure cookies in production
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
       sameSite: 'strict', // CSRF protection
       maxAge: 15 * 60 * 1000, // 15 minutes
       path: '/',
