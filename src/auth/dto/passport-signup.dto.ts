@@ -1,6 +1,7 @@
 import { IsEmail, IsEnum, IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
 import { Rank, Role } from '@prisma/client';
 
+// TODO: Ensure this DTO follows the new prisma schema for User 
 export class PassportSignUpDto {
   @IsNotEmpty()
   @IsString()
@@ -22,8 +23,8 @@ export class PassportSignUpDto {
 
   @IsNotEmpty()
   @IsString()
-  // @MinLength(8, { message: 'Password must be at least 8 characters long' })
-  password: string;
+  @MinLength(8, { message: 'Password must be at least 8 characters long' })
+  passwordHash: string;
 
   @IsNotEmpty()
   @IsEnum(Rank)

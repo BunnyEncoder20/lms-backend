@@ -12,12 +12,13 @@ export class UsersService {
     return await this.prisma.user.findMany();
   }
 
-  async getById(id: number): Promise<User | null> {
+  async getById(personalNumber: string): Promise<User | null> {
     return await this.prisma.user.findUnique({
-      where: { id },
+      where: { personalNumber },
     });
   }
 
+  // ! Might be redundent now
   async getByEmail(email: string): Promise<User | null> {
     return await this.prisma.user.findUnique({
       where: { email },

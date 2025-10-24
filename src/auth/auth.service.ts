@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User, Rank, Role } from '@prisma/client';
 import { UsersService } from '../users/users.service';
 import { ConfigService } from '@nestjs/config';
+import { PassportSignUpDto } from './dto/passport-signup.dto';
 
 @Injectable()
 export class AuthService {
@@ -13,20 +14,18 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async signUp(
-    email: string,
-    password: string,
-    name: string,
-    rank: Rank,
-    role: Role,
-  ) {
+  async signUp(passportSignUpDto: PassportSignUpDto) {
+    // hash the password
+    const { personalNumber, email, password, firstName, lastName, rank, role } = passportSignUpDto;
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await this.usersService.createUser({
-      name,
+      personalNumber,
+      firstName,
+      lastName,
       email,
       rank,
       role,
-      password: hashedPassword,
+      passwordHash: hashedPassword,
     });
 
     const tokens = this.generateTokens(user);

@@ -12,9 +12,8 @@ export class PassportAuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('signup')
-  async signUp(@Body() signUpDto: PassportSignUpDto, @Res({ passthrough: true }) response: Response ) {
-    const { email, password, name, rank, role } = signUpDto;
-    const results = await this.authService.signUp(email, password, name, rank, role);
+  async signUp(@Body() passportSignUpDto: PassportSignUpDto, @Res({ passthrough: true }) response: Response ) {
+    const results = await this.authService.signUp(passportSignUpDto);
 
     // Set tokens as HttpOnly cookies'
     this.setAuthCookies(response, results.access_token, results.refresh_token);
@@ -46,10 +45,10 @@ export class PassportAuthController {
   @HttpCode(HttpStatus.OK)
   @Post('signout')
   async signOut(
-    @User('userId') userId: string,
+    @User('personalNumber') personalNumber: string,
     @Res({ passthrough: true }) response: Response,
   ) {
-    await this.authService.signOut(userId);
+    await this.authService.signOut(personalNumber);
 
     // Clear cookies
     response.clearCookie('access_token');
