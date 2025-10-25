@@ -24,7 +24,7 @@ export class PassportSignUpDto {
   @IsNotEmpty()
   @IsString()
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
-  passwordHash: string;
+  password: string;  // password is not hashed yet
 
   @IsNotEmpty()
   @IsEnum(Rank)

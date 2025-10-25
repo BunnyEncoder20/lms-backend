@@ -8,5 +8,5 @@ export class PassportSignInDto {
 
   @IsNotEmpty()
   @IsString()
-  password: string;
+  hashedPassword: string;
 }

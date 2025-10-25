@@ -31,10 +31,10 @@ export class AuthService {
     const tokens = this.generateTokens(user);
 
     // Optionally: store refresh token in DB for revocation and rotation
-    await this.updateRefreshToken(user.id, tokens.access_token);
+    await this.updateRefreshToken(user.personalNumber, tokens.access_token);
 
     return {
-      id: user.id,
+      id: user.personalNumber,
       email: user.email,
       ...tokens,
     };
