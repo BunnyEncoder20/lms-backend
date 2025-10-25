@@ -1,12 +1,12 @@
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 // TODO: Ensure this DTO follows the new prisma schema for User 
 export class PassportSignInDto {
   @IsNotEmpty()
-  @IsEmail()
-  email: string;
+  @IsString()
+  personalNumber: string;
 
   @IsNotEmpty()
   @IsString()
-  hashedPassword: string;
+  password: string;
 }

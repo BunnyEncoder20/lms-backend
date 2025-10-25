@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsString, MinLength, MaxLength } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsString, MinLength, MaxLength, IsOptional } from 'class-validator';
 import { Rank, Role } from '@prisma/client';
 
 // TODO: Ensure this dto follows the new prisma schema for User
@@ -33,4 +33,8 @@ export class CreateUserDto {
   @IsNotEmpty()
   @IsEnum(Role, { message: 'role must be one of the defined Role enum values' })
   role: Role;
+
+  @IsOptional()
+  @IsString()
+  refreshToken?: string | null;
 }

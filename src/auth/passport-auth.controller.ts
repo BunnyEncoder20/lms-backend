@@ -5,6 +5,7 @@ import { PassportSignInDto } from './dto/passport-signin.dto';
 import { JwtAuthGuard } from './guards/passport.guard';
 import type { Request, Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
+import { User } from './decorators/user.decorator';
 
 @Controller('auth-v2')
 export class PassportAuthController {
@@ -28,16 +29,17 @@ export class PassportAuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('signin')
-  async signIn(@Body() signInDto: PassportSignInDto, @Res({ passthrough: true }) response: Response) {
-    const { email, password } = signInDto;
-    const results = await this.authService.signIn(email, password);
+  async signIn(@Body() passportSignInDto: PassportSignInDto, @Res({ passthrough: true }) response: Response) {
+    const results = await this.authService.signIn(passportSignInDto);
 
     this.setAuthCookies(response, results.access_token, results.refresh_token);
 
     return {
-      id: results.id,
-      email: results.email,
-      message: 'User login successful',
+      personalNumber: results.personalNumber,
+      firstName: results.firstName,
+      lastName: results.lastName,
+      rank: results.rank,
+      role: results.role,
     };
   }
 
@@ -86,9 +88,9 @@ export class PassportAuthController {
   ) {
     // Access token cookie
     response.cookie('access_token', access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-      sameSite: 'strict', // CSRF protection
+      httpOnly: true, // security against XSS
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production: security against MITM, sending cookies over HTTPS only
+      sameSite: 'strict', // security against CSRF protection
       maxAge: 15 * 60 * 1000, // 15 minutes
       path: '/',
     });

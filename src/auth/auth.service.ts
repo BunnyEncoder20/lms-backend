@@ -5,6 +5,7 @@ import { User, Rank, Role } from '@prisma/client';
 import { UsersService } from '../users/users.service';
 import { ConfigService } from '@nestjs/config';
 import { PassportSignUpDto } from './dto/passport-signup.dto';
+import { PassportSignInDto } from './dto/passport-signin.dto';
 
 @Injectable()
 export class AuthService {
@@ -28,6 +29,7 @@ export class AuthService {
       passwordHash: hashedPassword,
     });
 
+    // TODO: check that when to send the auth tokens. Most likely this is not to send when creating the user, only during signIn flow
     // generate the auth tokens
     const tokens = this.generateTokens(user);
 
@@ -41,19 +43,26 @@ export class AuthService {
     };
   }
 
-  async signIn(email: string, password: string) {
-    const user: User | null = await this.usersService.getByEmail(email);
+  async signIn(passportSignInDto: PassportSignInDto) {
+    const { personalNumber, password } = passportSignInDto;
+    const user: User | null = await this.usersService.getById(personalNumber);
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    // generating the auth tokens
     const tokens = this.generateTokens(user);
-    await this.updateRefreshToken(user.id, tokens.refresh_token);
+
+    // store the refresh tokens in the DB
+    await this.updateRefreshToken(user.personalNumber, tokens.refresh_token);
 
     return {
-      id: user.id,
-      email: user.email, // TODO: might need to send role back instead of email
+      personalNumber: user.personalNumber,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      rank: user.rank,
+      role: user.role,
       ...tokens,
     };
   }
@@ -84,13 +93,15 @@ export class AuthService {
     }
 
     const tokens = this.generateTokens(user);
-    await this.updateRefreshToken(user.id, tokens.refresh_token);
+    await this.updateRefreshToken(user.personalNumber, tokens.refresh_token);
 
     return tokens;
   }
 
   private async updateRefreshToken(userId: string, refreshToken: string) {
+    // Hash the refresh token before storing it
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+
     await this.usersService.updateUser(userId, {
       refreshToken: hashedRefreshToken,
     });

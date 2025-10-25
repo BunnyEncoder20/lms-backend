@@ -15,22 +15,28 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     // * The token is extracted from the cookies here
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
+        // * List of methods  to try and extract the auth tokens
+
+        // first method
         (request: Request) => {
           return request?.cookies?.access_token;
         },
+
+        // second method
         ExtractJwt.fromAuthHeaderAsBearerToken(),
       ]),
       ignoreExpiration: false,
-      secretOrKey: secret,
+      secretOrKey: secret,  // cyptographically verify signature of incoming JWT
     });
   }
 
   validate(payload: any) {
-    // the return value gets attached to req.user
+    // * the req.user is atteched to the req body by passport
+    // * this return value gets attached to req.user
     return {
-      userId: payload.sub,
-      email: payload.email,
+      personalNumber: payload.sub,
       role: payload.role,
+      rnak: payload.rank,
     };
   }
 }
