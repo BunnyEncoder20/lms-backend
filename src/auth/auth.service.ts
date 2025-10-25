@@ -76,22 +76,23 @@ export class AuthService {
     };
   }
 
-  async refreshTokens(userId: number, refreshToken: string) {
-    const user = await this.usersService.getById(userId);
+  async refreshTokens(personalNumber: string, refreshToken: string) {
+    const user = await this.usersService.getById(personalNumber);
 
-    if (!user || !user.refreshToken) {
+    if (!user || !user.refreshTokenHash) {
       throw new UnauthorizedException('Access Denied: refresh token not found');
     }
 
     const refreshTokenMatches = await bcrypt.compare(
       refreshToken,
-      user.refreshToken,
+      user.refreshTokenHash,
     );
 
     if (!refreshTokenMatches) {
       throw new UnauthorizedException('Access Denied: Invalid refreshToken');
     }
 
+    // If the refresh token are valid, regen the access token
     const tokens = this.generateTokens(user);
     await this.updateRefreshToken(user.personalNumber, tokens.refresh_token);
 

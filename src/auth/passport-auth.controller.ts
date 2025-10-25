@@ -62,6 +62,7 @@ export class PassportAuthController {
   @HttpCode(HttpStatus.OK)
   @Post('refresh')
   async refreshAccessToken(
+    // ! Wrong: use a custom decorator to extract the refresh token
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
@@ -72,6 +73,7 @@ export class PassportAuthController {
       throw new UnauthorizedException('Refresh token not found in cookies');
     }
 
+    // ! Wrong: use a RefreshJWTStrategy to extract, validate the refreshtoken and attach it to the user.req
     // Decode to get userId (you might want to add error handling)
     const decoded = this.jwtService.decode(refreshToken) as any;
     const tokens = await this.authService.refreshTokens(decoded.sub, refreshToken);
