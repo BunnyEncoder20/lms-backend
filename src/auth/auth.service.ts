@@ -28,15 +28,16 @@ export class AuthService {
       passwordHash: hashedPassword,
     });
 
+    // generate the auth tokens
     const tokens = this.generateTokens(user);
 
     // Optionally: store refresh token in DB for revocation and rotation
-    await this.updateRefreshToken(user.personalNumber, tokens.access_token);
+    await this.updateRefreshToken(user.personalNumber, tokens.refresh_token);
 
     return {
       id: user.personalNumber,
       email: user.email,
-      ...tokens,
+      ...tokens,  // these tokens are converted to cookies in controller
     };
   }
 
@@ -58,11 +59,11 @@ export class AuthService {
   }
 
   private generateTokens(user: User) {
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload = { sub: user.personalNumber, role: user.role, rank: user.rank };
 
     return {
-      access_token: this.jwtService.sign(payload),
-      refresh_token: this.jwtService.sign(payload),
+      access_token: this.jwtService.sign(payload, { expiresIn: '15m' }),
+      refresh_token: this.jwtService.sign(payload, { expiresIn: '7d' }),
     };
   }
 
