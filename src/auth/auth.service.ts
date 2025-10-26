@@ -17,7 +17,8 @@ export class AuthService {
 
   async signUp(passportSignUpDto: PassportSignUpDto) {
     // hash the password
-    const { personalNumber, email, password, firstName, lastName, rank, role } = passportSignUpDto;
+    const { personalNumber, email, password, firstName, lastName, rank, role } =
+      passportSignUpDto;
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await this.usersService.createUser({
       personalNumber,
@@ -39,7 +40,7 @@ export class AuthService {
     return {
       id: user.personalNumber,
       email: user.email,
-      ...tokens,  // these tokens are converted to cookies in controller
+      ...tokens, // these tokens are converted to cookies in controller
     };
   }
 
@@ -68,7 +69,11 @@ export class AuthService {
   }
 
   private generateTokens(user: User) {
-    const payload = { sub: user.personalNumber, role: user.role, rank: user.rank };
+    const payload = {
+      sub: user.personalNumber,
+      role: user.role,
+      rank: user.rank,
+    };
 
     return {
       access_token: this.jwtService.sign(payload, { expiresIn: '15m' }),

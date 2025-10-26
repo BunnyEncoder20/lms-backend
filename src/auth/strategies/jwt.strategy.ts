@@ -26,7 +26,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
         ExtractJwt.fromAuthHeaderAsBearerToken(),
       ]),
       ignoreExpiration: false,
-      secretOrKey: secret,  // cyptographically verify signature of incoming JWT
+      secretOrKey: secret, // cyptographically verify signature of incoming JWT
     });
   }
 
@@ -36,7 +36,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     return {
       personalNumber: payload.sub,
       role: payload.role,
-      rnak: payload.rank,
+      rank: payload.rank,
     };
   }
 }
