@@ -1,19 +1,35 @@
-import { Controller, Post, HttpCode, HttpStatus, Body, UseGuards, Req, Res, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  HttpCode,
+  HttpStatus,
+  Body,
+  UseGuards,
+  Req,
+  Res,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { PassportSignUpDto } from './dto/passport-signup.dto';
 import { PassportSignInDto } from './dto/passport-signin.dto';
-import { JwtAuthGuard } from './guards/passport.guard';
-import type { Request, Response } from 'express';
+import { JwtAuthGuard, RefreshJwtAuthGuard } from './guards/passport.guard';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './decorators/user.decorator';
+import type { Request, Response } from 'express';
 
 @Controller('auth-v2')
 export class PassportAuthController {
-  constructor(private authService: AuthService, private jwtService: JwtService) {}
+  constructor(
+    private authService: AuthService,
+    private jwtService: JwtService,
+  ) {}
 
   @HttpCode(HttpStatus.OK)
   @Post('signup')
-  async signUp(@Body() passportSignUpDto: PassportSignUpDto, @Res({ passthrough: true }) response: Response ) {
+  async signUp(
+    @Body() passportSignUpDto: PassportSignUpDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     const results = await this.authService.signUp(passportSignUpDto);
 
     // Set tokens as HttpOnly cookies'
@@ -24,12 +40,15 @@ export class PassportAuthController {
       id: results.id,
       email: results.email,
       message: 'User registration successful',
-    }
+    };
   }
 
   @HttpCode(HttpStatus.OK)
   @Post('signin')
-  async signIn(@Body() passportSignInDto: PassportSignInDto, @Res({ passthrough: true }) response: Response) {
+  async signIn(
+    @Body() passportSignInDto: PassportSignInDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     const results = await this.authService.signIn(passportSignInDto);
 
     this.setAuthCookies(response, results.access_token, results.refresh_token);
@@ -59,25 +78,22 @@ export class PassportAuthController {
     return { message: 'Sign out successful' };
   }
 
+  @UseGuards(RefreshJwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Post('refresh')
   async refreshAccessToken(
-    // ! Wrong: use a custom decorator to extract the refresh token
-    @Req() request: Request,
+    @User('personalNumber') personalNumber: string,
+    @User('refreshToken') refreshToken: string,
     @Res({ passthrough: true }) response: Response,
   ) {
-    // Access the refresh token from HttpOnly cookie
-    const refreshToken = request.cookies['refresh_token'];
+    // Refresh Token is validated and attached to the req.user which is fetched above
+    // Using that to get new tokens from auth service
+    const tokens = await this.authService.refreshTokens(
+      personalNumber,
+      refreshToken,
+    );
 
-    if (!refreshToken) {
-      throw new UnauthorizedException('Refresh token not found in cookies');
-    }
-
-    // ! Wrong: use a RefreshJWTStrategy to extract, validate the refreshtoken and attach it to the user.req
-    // Decode to get userId (you might want to add error handling)
-    const decoded = this.jwtService.decode(refreshToken) as any;
-    const tokens = await this.authService.refreshTokens(decoded.sub, refreshToken);
-
+    // Set the new tokens into cookies
     this.setAuthCookies(response, tokens.access_token, tokens.refresh_token);
 
     return { message: 'Tokens refreshed successfully' };
