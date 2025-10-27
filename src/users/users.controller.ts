@@ -24,8 +24,8 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   /* GET Routes */
-  @UseGuards(JwtAuthGuard, RolesGuard) // Protected Route: Need valid JWT token
   @Roles('ADMIN', 'SUPER_ADMIN', 'TETRA_ADMIN', 'CO', 'JR_CO', 'LMS_ADMIN') // RBAC: only ADMIN can access this route
+  @UseGuards(JwtAuthGuard, RolesGuard) // Protected Route: Need valid JWT token
   @Get()
   async getAll(): Promise<ResponseUserDto[]> {
     const data = await this.usersService.getAll();
@@ -47,7 +47,10 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard) // Protected Route: Need valid JWT token
   @Get(':id')
-  async getOne(@Request() req, @Param('id') userId: string): Promise<ResponseUserDto> {
+  async getOne(
+    @Request() req,
+    @Param('id') userId: string,
+  ): Promise<ResponseUserDto> {
     const userData = await this.usersService.getById(parseInt(userId, 10));
 
     // Debugging data
@@ -64,7 +67,6 @@ export class UsersController {
       throw new UnauthorizedException('User can only access their own data');
     }
   }
-
 
   /* POST Routes */
   @UseGuards(JwtAuthGuard, RolesGuard)

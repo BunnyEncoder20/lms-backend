@@ -9,15 +9,18 @@ export class RolesGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
+    // Find the rule (set by the @Roles() decorator) for this route
     const requiredRoles = this.reflector.get<string[]>(
       'roles',
       context.getHandler(),
     );
 
+    // If no roles are required, allow access
     if (!requiredRoles) {
-      return true; // If no roles are required, allow access
+      return true;
     }
 
+    // Enforce the rule
     const { user } = context.switchToHttp().getRequest();
     return requiredRoles.some((role) => user.role === role);
   }
