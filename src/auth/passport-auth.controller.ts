@@ -5,24 +5,20 @@ import {
   HttpStatus,
   Body,
   UseGuards,
-  Req,
   Res,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { PassportSignUpDto } from './dto/passport-signup.dto';
 import { PassportSignInDto } from './dto/passport-signin.dto';
 import { JwtAuthGuard, RefreshJwtAuthGuard } from './guards/passport.guard';
-import { JwtService } from '@nestjs/jwt';
 import { User } from './decorators/user.decorator';
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 
 @Controller('auth-v2')
 export class PassportAuthController {
   constructor(
     private authService: AuthService,
-    private jwtService: JwtService,
-  ) {}
+  ) { }
 
   @HttpCode(HttpStatus.OK)
   @Post('signup')
