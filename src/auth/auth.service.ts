@@ -1,9 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { User, Rank, Role } from '@prisma/client';
+import { User } from '@prisma/client';
 import { UsersService } from '../users/users.service';
-import { ConfigService } from '@nestjs/config';
 import { PassportSignUpDto } from './dto/passport-signup.dto';
 import { PassportSignInDto } from './dto/passport-signin.dto';
 
@@ -12,8 +11,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-    private configService: ConfigService,
-  ) {}
+  ) { }
 
   async signUp(passportSignUpDto: PassportSignUpDto) {
     // hash the password
@@ -31,6 +29,14 @@ export class AuthService {
     });
 
     // TODO: check that when to send the auth tokens. Most likely this is not to send when creating the user, only during signIn flow
+    // BUG: Help
+    // FIXME: This func is broken
+    // HACK: Yooo 
+    // NOTE: these are the ways to write better comments 
+    // WARN: sabpri I'm warning you sabpri. Behen shot
+    // PERF:  or Performance / Omptimize this
+    // XXX: Area needs significant attention
+    // TEST: Test this shit
     // generate the auth tokens
     const tokens = this.generateTokens(user);
 
