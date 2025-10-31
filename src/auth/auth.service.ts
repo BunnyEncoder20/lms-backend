@@ -87,7 +87,10 @@ export class AuthService {
     };
   }
 
-  async refreshTokens(personalNumber: string, refreshToken: string) {
+  async rerefreshTokensfreshTokens(
+    personalNumber: string,
+    refreshToken: string,
+  ) {
     const user = await this.usersService.getById(personalNumber);
 
     if (!user || !user.refreshTokenHash) {
