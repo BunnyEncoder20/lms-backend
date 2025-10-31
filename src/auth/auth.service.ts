@@ -11,7 +11,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-  ) { }
+  ) {}
 
   async signUp(passportSignUpDto: PassportSignUpDto) {
     // hash the password
@@ -31,8 +31,8 @@ export class AuthService {
     // TODO: check that when to send the auth tokens. Most likely this is not to send when creating the user, only during signIn flow
     // BUG: Help
     // FIXME: This func is broken
-    // HACK: Yooo 
-    // NOTE: these are the ways to write better comments 
+    // HACK: Yooo
+    // NOTE: these are the ways to write better comments
     // WARN: sabpri I'm warning you sabpri. Behen shot
     // PERF:  or Performance / Omptimize this
     // XXX: Area needs significant attention
@@ -115,7 +115,7 @@ export class AuthService {
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
 
     await this.usersService.updateUser(userId, {
-      refreshToken: hashedRefreshToken,
+      refreshTokenHash: hashedRefreshToken,
     });
   }
 

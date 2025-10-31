@@ -1,3 +1,4 @@
+// FIXME: Renmae this file, doesn't follow naming Convention (camelcase only)
 import { IsEmail, IsEnum, IsNotEmpty, IsString, MinLength, MaxLength, IsOptional } from 'class-validator';
 import { Rank, Role } from '@prisma/client';
 
