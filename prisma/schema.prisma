@@ -58,3 +58,44 @@ enum Role {
   TRAINEE
   ASSESSEE
 }
+
+// Trial schema for logging  
+
+// Define an Enum for activity types for easy filtering and consistency
+enum ActivityType {
+  LOGIN
+  LOGOUT
+  RESOURCE_VIEW // Tracking access to LMS content (read, watch, etc.)
+  RESOURCE_CREATE
+  RESOURCE_UPDATE
+  RESOURCE_DELETE
+  USER_CREATE
+  USER_UPDATE
+  USER_DELETE
+  SECURITY_VIOLATION // Failed login attempts, unauthorized access
+  SYSTEM_ACCESS // General endpoint access
+}
+
+model AuditLog {
+  id              String         @id @default(cuid()) // Unique ID for the log entry
+  
+  // Filtering & Sorting Fields
+  createdAt       DateTime       @default(now()) @map("created_at") // Latest to oldest sorting (REQUIRED)
+  activityType    ActivityType   @map("activity_type") // For filtering by activity (e.g., 'LOGIN', 'USER_UPDATE')
+
+  // User Context (Key for User ID/Username filtering)
+  personalNumber  String         @map("personal_number") // The User ID who initiated the action
+  username        String?        // The user's name for easier readability
+
+  // Request Context
+  method          String         // HTTP method: GET, POST, PATCH, DELETE
+  route           String         // The endpoint accessed: e.g., /v1/user/123456
+  
+  // Storage for complex data
+  details         Json           // Stores IP, request body, query params, old/new values, error messages, etc. (REQUIRED)
+  
+  // Optional: Add an index for faster lookups on your most frequent query fields
+  @@index([personalNumber])
+  @@index([activityType])
+  @@map("audit_log") // Set the table name
+}
