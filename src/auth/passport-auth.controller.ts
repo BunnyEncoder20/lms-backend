@@ -6,18 +6,22 @@ import {
   Body,
   UseGuards,
   Res,
+  Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { LoggingService } from '../logging/logging.service';
 import { PassportSignUpDto } from './dto/passport-signup.dto';
 import { PassportSignInDto } from './dto/passport-signin.dto';
 import { JwtAuthGuard, RefreshJwtAuthGuard } from './guards/passport.guard';
 import { User } from './decorators/user.decorator';
-import type { Response } from 'express';
+import { ActivityType } from '@prisma/client';
+import type { Response, Request } from 'express';
 
 @Controller('auth-v2')
 export class PassportAuthController {
   constructor(
     private authService: AuthService,
+    private loggingService: LoggingService,
   ) { }
 
   @HttpCode(HttpStatus.OK)
@@ -25,11 +29,27 @@ export class PassportAuthController {
   async signUp(
     @Body() passportSignUpDto: PassportSignUpDto,
     @Res({ passthrough: true }) response: Response,
+    @Req() request: Request,
   ) {
     const results = await this.authService.signUp(passportSignUpDto);
 
     // Set tokens as HttpOnly cookies'
     this.setAuthCookies(response, results.access_token, results.refresh_token);
+
+    // Create audit log
+    await this.loggingService.createAuditLog({
+      activityType: ActivityType.USER_CREATE,
+      personalNumber: results.personalNumber,
+      username: `${results.firstName} ${results.lastName}`,
+      method: request.method,
+      route: request.path,
+      details: {
+        ip: request.ip,
+        userAgent: request.headers['user-agent'],
+        rank: results.rank,
+        role: results.role,
+      },
+    });
 
     // Return user info without the tokens (They'll be in cookies now)
     return {
@@ -44,10 +64,26 @@ export class PassportAuthController {
   async signIn(
     @Body() passportSignInDto: PassportSignInDto,
     @Res({ passthrough: true }) response: Response,
+    @Req() request: Request,
   ) {
     const results = await this.authService.signIn(passportSignInDto);
 
     this.setAuthCookies(response, results.access_token, results.refresh_token);
+
+    // Create audit log for successful login
+    await this.loggingService.createAuditLog({
+      activityType: ActivityType.LOGIN,
+      personalNumber: results.personalNumber,
+      username: `${results.firstName} ${results.lastName}`,
+      method: request.method,
+      route: request.path,
+      details: {
+        ip: request.ip,
+        userAgent: request.headers['user-agent'],
+        rank: results.rank,
+        role: results.role,
+      },
+    });
 
     return {
       personalNumber: results.personalNumber,
@@ -64,12 +100,25 @@ export class PassportAuthController {
   async signOut(
     @User('personalNumber') personalNumber: string,
     @Res({ passthrough: true }) response: Response,
+    @Req() request: Request,
   ) {
     await this.authService.signOut(personalNumber);
 
     // Clear cookies
     response.clearCookie('access_token');
     response.clearCookie('refresh_token');
+
+    // Create audit log for logout
+    await this.loggingService.createAuditLog({
+      activityType: ActivityType.LOGOUT,
+      personalNumber: personalNumber,
+      method: request.method,
+      route: request.path,
+      details: {
+        ip: request.ip,
+        userAgent: request.headers['user-agent'],
+      },
+    });
 
     return { message: 'Sign out successful' };
   }
